@@ -1,0 +1,15 @@
+# view AndroidManifest.xml #generated:36
+-keep class com.demomapas.GCMIntentService { <init>(...); }
+
+# view AndroidManifest.xml #generated:29
+-keep class com.demomapas.MainActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:48
+-keep class com.demomapas.RegisterActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:37
+-keep class com.google.android.gcm.GCMBroadcastReceiver { <init>(...); }
+
+# view res/layout/activity_main.xml #generated:8
+-keep class com.google.android.gms.maps.SupportMapFragment { <init>(...); }
+
