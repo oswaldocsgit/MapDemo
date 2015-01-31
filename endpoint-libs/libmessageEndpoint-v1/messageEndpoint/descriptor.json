@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/messageEndpoint/v1/20150129164609/java/1.18.0-rc/demomapas.com-messageEndpoint-v1-20150129164609-java-1.18.0-rc-sources.jar", 
-      "path": "demomapas.com-messageEndpoint-v1-20150129164609-java-1.18.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/messageEndpoint/v1/20150131231228/java/1.18.0-rc/demomapas.com-messageEndpoint-v1-20150131231228-java-1.18.0-rc-sources.jar", 
+      "path": "demomapas.com-messageEndpoint-v1-20150131231228-java-1.18.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2015-01-29 16:46"
+      "timestamp": "2015-01-31 23:12"
     }, 
     {
-      "path": "demomapas.com-messageEndpoint-v1-20150129164609-java-1.18.0-rc.jar.properties", 
+      "path": "demomapas.com-messageEndpoint-v1-20150131231228-java-1.18.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -674,5 +674,5 @@
   "version": "v1", 
   "language_version": "1.18.0-rc", 
   "id": "messageEndpoint:v1", 
-  "revision": 20150129164609
+  "revision": 20150131231228
 }
