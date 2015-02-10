@@ -33,6 +33,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+         <activity android:label="@string/app_name" android:name=".MapView">
+           
+        </activity>
+        <activity android:label="@string/app_name" android:name=".LevantarInformacion">
+           
+        </activity>
         <service android:name=".GCMIntentService"/>
         <receiver android:name="com.google.android.gcm.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>

@@ -1,10 +1,15 @@
-package com.demomapas;
+ package com.demomapas;
 
 import java.io.IOException;
 
+import com.demomapas.deviceinfoendpoint.Deviceinfoendpoint;
+import com.demomapas.deviceinfoendpoint.model.DeviceInfo;
 import com.demomapas.messageEndpoint.MessageEndpoint;
 import com.demomapas.messageEndpoint.model.CollectionResponseMessageData;
 import com.demomapas.messageEndpoint.model.MessageData;
+import com.demomapas.model.usuarioendpoint.Usuarioendpoint;
+import com.demomapas.model.usuarioendpoint.model.CollectionResponseUsuario;
+import com.demomapas.model.usuarioendpoint.model.Usuario;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -12,16 +17,21 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * An activity that communicates with your App Engine backend via Cloud
@@ -50,7 +60,17 @@ import android.widget.TextView;
  * For a comprehensive walkthrough, check out the documentation at
  * http://developers.google.com/eclipse/docs/cloud_endpoints
  */
-public class RegisterActivity extends Activity {
+public class RegisterActivity extends Activity implements OnClickListener {
+	DeviceInfo device = new DeviceInfo();
+	Deviceinfoendpoint deviceiInfoendpoint = null;
+	Usuarioendpoint usuarioEndpoint = null;
+	Usuario Usuario = new Usuario();
+	private EditText usuariotext;
+	private EditText password;
+	private boolean userExist = false;
+	Intent intent;
+	static SharedPreferences.Editor editor;
+	static SharedPreferences Preferences;
 
   enum State {
     REGISTERED, REGISTERING, UNREGISTERED, UNREGISTERING
@@ -64,22 +84,29 @@ public class RegisterActivity extends Activity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    Preferences = getApplicationContext().getSharedPreferences(
+			"settings", 0);
+    boolean initialized = Preferences.getBoolean("FirstTime", false);
+    if (initialized) {
+    	finish();
+    }
     setContentView(R.layout.activity_register);
-
+    Intent intent = new Intent(this, MapView.class);
     Button regButton = (Button) findViewById(R.id.regButton);
 
     registerListener = new OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
+    
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
           if (GCMIntentService.PROJECT_NUMBER == null
               || GCMIntentService.PROJECT_NUMBER.length() == 0) {
-            showDialog("Unable to register for Google Cloud Messaging. "
-                + "Your application's PROJECT_NUMBER field is unset! You can change "
-                + "it in GCMIntentService.java");
+//            showDialog("Unable to register for Google Cloud Messaging. "
+//                + "Your application's PROJECT_NUMBER field is unset! You can change "
+//                + "it in GCMIntentService.java");
           } else {
-            updateState(State.REGISTERING);
+         //   updateState(State.REGISTERING);
             try {
               GCMIntentService.register(getApplicationContext());
             } catch (Exception e) {
@@ -89,11 +116,11 @@ public class RegisterActivity extends Activity {
                       + " target to Google APIs? "
                       + "See https://developers.google.com/eclipse/docs/cloud_endpoints_android"
                       + " for more information.", e);
-              showDialog("There was a problem when attempting to register for "
-                  + "Google Cloud Messaging. If you're running in the emulator, "
-                  + "is the target of your virtual device set to 'Google APIs?' "
-                  + "See the Android log for more details.");
-              updateState(State.UNREGISTERED);
+//              showDialog("There was a problem when attempting to register for "
+//                  + "Google Cloud Messaging. If you're running in the emulator, "
+//                  + "is the target of your virtual device set to 'Google APIs?' "
+//                  + "See the Android log for more details.");
+       //       updateState(State.UNREGISTERED);
             }
           }
           return true;
@@ -110,7 +137,7 @@ public class RegisterActivity extends Activity {
       public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
-          updateState(State.UNREGISTERING);
+       //   updateState(State.UNREGISTERING);
           GCMIntentService.unregister(getApplicationContext());
           return true;
         case MotionEvent.ACTION_UP:
@@ -121,7 +148,16 @@ public class RegisterActivity extends Activity {
       }
     };
 
-    regButton.setOnTouchListener(registerListener);
+   // regButton.setOnTouchListener(registerListener);
+    regButton.setOnClickListener(new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			new validarUsuario(getApplicationContext()).execute();
+			
+		}
+	});
     
     /*
      * build the messaging endpoint so we can access old messages via an endpoint call
@@ -135,6 +171,12 @@ public class RegisterActivity extends Activity {
 
     messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
   }
+  @Override
+protected void onStop() {
+	// TODO Auto-generated method stub
+
+	  super.onStop();
+}
 
   @Override
   protected void onNewIntent(Intent intent) {
@@ -146,7 +188,7 @@ public class RegisterActivity extends Activity {
      */
     if (intent.getBooleanExtra("gcmIntentServiceMessage", false)) {
 
-      showDialog(intent.getStringExtra("message"));
+     // showDialog(intent.getStringExtra("message"));
 
       if (intent.getBooleanExtra("registrationMessage", false)) {
 
@@ -159,9 +201,9 @@ public class RegisterActivity extends Activity {
            * state.
            */
           if (curState == State.REGISTERING) {
-            updateState(State.UNREGISTERED);
+        //    updateState(State.UNREGISTERED);
           } else {
-            updateState(State.REGISTERED);
+        //    updateState(State.REGISTERED);
           }
         } else {
           /*
@@ -172,9 +214,9 @@ public class RegisterActivity extends Activity {
            * state.
            */
           if (curState == State.REGISTERING) {
-            updateState(State.REGISTERED);
+      //      updateState(State.REGISTERED);
           } else {
-            updateState(State.UNREGISTERED);
+       //     updateState(State.UNREGISTERED);
           }
         }
       }
@@ -216,16 +258,16 @@ public class RegisterActivity extends Activity {
     curState = newState;
   }
 
-  private void showDialog(String message) {
-    new AlertDialog.Builder(this)
-        .setMessage(message)
-        .setPositiveButton(android.R.string.ok,
-            new DialogInterface.OnClickListener() {
-              public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-              }
-            }).show();
-  }
+//  private void showDialog(String message) {
+//    new AlertDialog.Builder(this)
+//        .setMessage(message)
+//        .setPositiveButton(android.R.string.ok,
+//            new DialogInterface.OnClickListener() {
+//              public void onClick(DialogInterface dialog, int id) {
+//                dialog.dismiss();
+//              }
+//            }).show();
+//  }
 
   /*
    * Need to run this in background so we don't hold up the UI thread, 
@@ -259,9 +301,9 @@ public class RegisterActivity extends Activity {
       if (exceptionThrown != null) {
         Log.e(RegisterActivity.class.getName(), 
             "Exception when listing Messages", exceptionThrown);
-        showDialog("Failed to retrieve the last 5 messages from " +
-        		"the endpoint at " + messageEndpoint.getBaseUrl() +
-        		", check log for details");
+//        showDialog("Failed to retrieve the last 5 messages from " +
+//        		"the endpoint at " + messageEndpoint.getBaseUrl() +
+//        		", check log for details");
       }
       else {
         TextView messageView = (TextView) findViewById(R.id.msgView);
@@ -271,6 +313,120 @@ public class RegisterActivity extends Activity {
           messageView.append(message.getMessage() + "\n");
         }
       }
-    }   
+    }  
+    
+   
   }
+  
+	public class validarUsuario extends AsyncTask<Void, Void, Void> {
+
+		Context context;
+		DeviceInfo device = new DeviceInfo();
+		Deviceinfoendpoint deviceiInfoendpoint = null;
+		Usuarioendpoint usuarioEndpoint = null;
+		Usuario Usuario = new Usuario();
+		
+		private validarUsuario(Context context) {
+	        this.context = context.getApplicationContext();
+	    }
+		@Override
+		protected Void doInBackground(Void... params) {
+			usuariotext = (EditText)findViewById(R.id.usuario);
+			password = (EditText)findViewById(R.id.password);
+			// TODO Auto-generated method stub
+			
+			
+			
+		////para el upodate del dispositivo
+//			Deviceinfoendpoint.Builder deviceInfoendpointbuilder = new Deviceinfoendpoint.Builder(
+//					AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
+//					new HttpRequestInitializer() {
+//
+//						@Override
+//						public void initialize(HttpRequest arg0) {
+//							// TODO Auto-generated method stub
+//						}
+//					});
+//			deviceiInfoendpoint = CloudEndpointUtils.updateBuilder(
+//					deviceInfoendpointbuilder).build();
+			
+			
+			Usuarioendpoint.Builder usuariosbuilder = new Usuarioendpoint.Builder(
+			AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
+			new HttpRequestInitializer() {
+
+				@Override
+				public void initialize(HttpRequest arg0) {
+					// TODO Auto-generated method stub
+				}
+			});
+			usuarioEndpoint = CloudEndpointUtils.updateBuilder(
+			usuariosbuilder).build();
+			try {
+				CollectionResponseUsuario usuario = usuarioEndpoint.listUsuario().execute();
+				for (Usuario items : usuario.getItems()) {
+					if(items.getName().equalsIgnoreCase(usuariotext.getText().toString()) && items.getPassword().equalsIgnoreCase(password.getText().toString())){
+						Log.i("validacion de usuario", "el usuario si existe");
+						userExist=true;
+						}
+					}
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		
+
+			return null;
+		}
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			
+			if(!userExist){
+				Toast.makeText(getApplicationContext(), "El usuario no existe compruebe sus datos", Toast.LENGTH_LONG).show();
+			}
+			else{
+			  //  updateState(State.REGISTERING);
+	            try {
+	              GCMIntentService.register(getApplicationContext());
+	              Log.i("registrado","registrado");
+	           
+	      		
+	              startActivity(new Intent(RegisterActivity.this, MapView.class));
+	              editor = Preferences.edit();
+	              editor.putBoolean("FirstTime", true);
+	              editor.commit();
+	              finish();
+	           
+	            } catch (Exception e) {
+	              Log.e(RegisterActivity.class.getName(),
+	                  "Exception received when attempting to register for Google Cloud "
+	                      + "Messaging. Perhaps you need to set your virtual device's "
+	                      + " target to Google APIs? "
+	                      + "See https://developers.google.com/eclipse/docs/cloud_endpoints_android"
+	                      + " for more information.", e);
+//	              showDialog("There was a problem when attempting to register for "
+//	                  + "Google Cloud Messaging. If you're running in the emulator, "
+//	                  + "is the target of your virtual device set to 'Google APIs?' "
+//	                  + "See the Android log for more details.");
+	            // updateState(State.UNREGISTERED);
+	            }
+				
+			}
+			
+			super.onPostExecute(result);
+		}
+
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
+	}
+  
 }
+

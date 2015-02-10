@@ -8,24 +8,8 @@
     <fragment
         android:id="@+id/frag_ubicacion"
         android:layout_width="match_parent"
-        android:layout_height="250px"
+        android:layout_height="fill_parent"
          class="com.google.android.gms.maps.SupportMapFragment" />
 
-    <TextView
-        android:id="@+id/direccion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/frag_ubicacion"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="14dp"
-        android:text="Onteniendo direccion..." />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/frag_ubicacion"
-        android:text="Dirección actual" />
 
 </RelativeLayout>
